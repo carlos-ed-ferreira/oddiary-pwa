@@ -88,7 +88,9 @@ it('uses the quick gate when the active CI and protection are proven', () => {
 it('updates the existing PR without creating a duplicate', () => {
   const result = publish({ existing: true });
   expect(result.status, result.stderr).toBe(0);
-  expect(result.calls.some((c) => c[2] === 'edit')).toBe(true);
+  expect(result.calls.some((c) => c[1] === 'api' && c.includes('PATCH'))).toBe(
+    true,
+  );
   expect(result.calls.some((c) => c[2] === 'create')).toBe(false);
 });
 
@@ -111,4 +113,10 @@ it('keeps the complete gate while main has no successful CI execution', () => {
   const result = publish({ reliableCI: true, unprovenMain: true });
   expect(result.status, result.stderr).toBe(0);
   expect(result.calls).toContainEqual(['make', 'quality']);
+});
+
+it('updates PR metadata when the installed gh edit API is deprecated', () => {
+  const result = publish({ existing: true, deprecatedEdit: true });
+  expect(result.status, result.stderr).toBe(0);
+  expect(result.calls.some((c) => c[2] === 'create')).toBe(false);
 });

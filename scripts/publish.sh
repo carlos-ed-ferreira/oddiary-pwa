@@ -67,10 +67,10 @@ fi
 [[ -r "$body_file" && -f "$body_file" ]] || fail 'PR_BODY_FILE deve indicar um arquivo legível.'
 if [[ -n "$numbers" ]]; then
     edit_args=()
-    [[ -z "${PR_TITLE:-}" ]] || edit_args+=(--title "$title")
-    [[ -z "${PR_BODY_FILE:-}" ]] || edit_args+=(--body-file "$body_file")
+    [[ -z "${PR_TITLE:-}" ]] || edit_args+=(--raw-field "title=$title")
+    [[ -z "${PR_BODY_FILE:-}" ]] || edit_args+=(--field "body=@$body_file")
     if [[ ${#edit_args[@]} -gt 0 ]]; then
-        gh pr edit "$numbers" --repo "$repo" "${edit_args[@]}"
+        gh api --method PATCH "repos/$repo/pulls/$numbers" "${edit_args[@]}" --silent
     fi
     url=$(gh pr view "$numbers" --repo "$repo" --json url --jq '.url')
 else

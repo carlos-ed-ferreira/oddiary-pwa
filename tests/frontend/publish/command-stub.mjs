@@ -49,6 +49,7 @@ if (command === 'git') {
 if (command === 'gh') {
   if (args[0] === 'auth') result('', settings.unauthenticated ? 1 : 0);
   if (args[0] === 'repo') result(`${repo}\tmain\tADMIN`);
+  if (args[0] === 'api' && args.includes('PATCH')) result();
   if (args[0] === 'api' && args[1].includes('/runs?'))
     result(settings.reliableCI && !settings.unprovenMain ? '1' : '0');
   if (args[0] === 'api')
@@ -60,6 +61,7 @@ if (command === 'gh') {
         : '',
       settings.reliableCI ? 0 : 1,
     );
+  if (args[1] === 'edit' && settings.deprecatedEdit) result('', 1);
   if (args[1] === 'list') result(settings.existing ? '7' : '');
   if (args[1] === 'view' && args.includes('statusCheckRollup'))
     result(settings.noChecks ? '0' : '1');
