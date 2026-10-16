@@ -1,0 +1,52 @@
+{
+    "$schema": "https://getcomposer.org/schema.json",
+    "name": "oddiary/pwa",
+    "type": "project",
+    "description": "Technical bootstrap for Oddiary PWA",
+    "license": "MIT",
+    "require": {
+        "laravel/framework": "^13.30.0",
+        "inertiajs/inertia-laravel": "^3.3.1",
+        "php": "^8.4"
+    },
+    "require-dev": {
+        "laravel/pint": "1.30.5",
+        "larastan/larastan": "3.10.0",
+        "pestphp/pest": "5.1.1",
+        "pestphp/pest-plugin-laravel": "5.0.1",
+        "phpmd/phpmd": "2.15.0",
+        "deptrac/deptrac": "4.7.1"
+    },
+    "autoload": {
+        "psr-4": {
+            "App\\": "app/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Tests\\": "tests/"
+        }
+    },
+    "scripts": {
+        "post-autoload-dump": [
+            "Illuminate\\Foundation\\ComposerScripts::postAutoloadDump",
+            "@php artisan package:discover --ansi"
+        ]
+    },
+    "config": {
+        "optimize-autoloader": true,
+        "preferred-install": "dist",
+        "sort-packages": true,
+        "allow-plugins": {
+            "pestphp/pest-plugin": true,
+            "php-http/discovery": true
+        }
+    },
+    "minimum-stability": "stable",
+    "prefer-stable": true,
+    "extra": {
+        "laravel": {
+            "dont-discover": []
+        }
+    }
+}

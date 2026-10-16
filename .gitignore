@@ -1,0 +1,17 @@
+/.env
+/.env.*
+!/.env.example
+/.aws/
+/.codex/
+/vendor/
+/node_modules/
+/public/build/
+/public/hot
+/coverage/
+/.phpunit.cache/
+/.phpunit.result.cache
+/.phpstan-cache/
+/.deptrac.cache
+/test-results/
+/playwright-report/
+*.log

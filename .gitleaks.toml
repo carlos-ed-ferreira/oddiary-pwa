@@ -1,0 +1,20 @@
+[extend]
+useDefault = true
+
+[[allowlists]]
+description = "Untracked local credentials and generated dependencies"
+paths = [
+    '''^\.env$''',
+    '''^\.aws/''',
+    '''^\.codex/''',
+    '''^\.git/''',
+    '''^\.phpstan-cache/''',
+    '''^vendor/''',
+    '''^node_modules/''',
+    '''^public/build/''',
+    '''^coverage/''',
+    '''^storage/''',
+    '''^bootstrap/cache/''',
+    '''^test-results/''',
+    '''^playwright-report/'''
+]

@@ -1,0 +1,16 @@
+deptrac:
+  paths:
+    - ./app
+  layers:
+    - name: Http
+      collectors:
+        - type: directory
+          value: app/Http/.*
+    - name: Framework
+      collectors:
+        - type: classLike
+          value: ^(Illuminate|Inertia|Symfony)\\.*
+  ruleset:
+    Http:
+      - Framework
+    Framework: []

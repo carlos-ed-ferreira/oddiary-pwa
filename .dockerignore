@@ -1,0 +1,14 @@
+.git
+.env
+.env.*
+.aws
+.codex
+.phpstan-cache
+.deptrac.cache
+vendor
+node_modules
+public/build
+storage
+coverage
+test-results
+playwright-report

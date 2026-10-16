@@ -1,0 +1,75 @@
+name: oddiary-pwa
+services:
+  app:
+    image: oddiary-pwa-runtime:php8.4.24-node24.19.0
+    build:
+      context: .
+      dockerfile: docker/app/Dockerfile
+      args:
+        HOST_UID: ${HOST_UID:-1000}
+        HOST_GID: ${HOST_GID:-1000}
+    init: true
+    working_dir: /var/www/html
+    volumes:
+      - .:/var/www/html
+      - composer-cache:/home/oddiary/.composer
+      - npm-cache:/home/oddiary/.npm
+    ports:
+      - '127.0.0.1:${APP_PORT:-8010}:8000'
+      - '127.0.0.1:${VITE_PORT:-5180}:${VITE_PORT:-5180}'
+    environment:
+      DB_HOST: postgres
+      PHP_CLI_SERVER_WORKERS: 4
+    healthcheck:
+      test: ['CMD', 'curl', '--fail', '--silent', 'http://localhost:8000/up']
+      interval: 5s
+      timeout: 3s
+      retries: 12
+  postgres:
+    profiles: ['database']
+    image: postgres:18.6-trixie
+    environment:
+      POSTGRES_DB: oddiary_pwa
+      POSTGRES_USER: oddiary_pwa
+      POSTGRES_PASSWORD: local-only
+    volumes:
+      - postgres-data:/var/lib/postgresql
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U oddiary_pwa -d oddiary_pwa']
+      interval: 5s
+      timeout: 3s
+      retries: 12
+  playwright:
+    profiles: ['e2e']
+    image: mcr.microsoft.com/playwright:v1.62.1-noble
+    user: '${HOST_UID:-1000}:${HOST_GID:-1000}'
+    init: true
+    working_dir: /var/www/html
+    network_mode: 'service:app'
+    volumes:
+      - .:/var/www/html
+    environment:
+      HOME: /tmp
+    entrypoint: ['npx', '--no-install', 'playwright', 'test']
+  secrets:
+    profiles: ['security']
+    image: ghcr.io/gitleaks/gitleaks:v8.30.1
+    network_mode: none
+    volumes:
+      - .:/repo:ro
+    working_dir: /repo
+    command:
+      [
+        'dir',
+        '.',
+        '--config',
+        '.gitleaks.toml',
+        '--redact',
+        '--no-banner',
+        '--exit-code',
+        '1',
+      ]
+volumes:
+  composer-cache:
+  npm-cache:
+  postgres-data:
