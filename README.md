@@ -104,7 +104,7 @@ git commit -m "Descreva a alteração"
 make publish
 ```
 
-`make publish` confere fetch/push do origin, conta/permissões, base main e atualização em relação a origin/main. Valida o commit antes do push e interrompe se HEAD/árvore mudarem. Usa `make quality` enquanto workflow e proteção de main não forem comprovados; depois usa `make check` local e deixa os gates aprofundados para o CI. Publica somente a branch de trabalho e abre ou atualiza uma PR, preservando a descrição existente por padrão.
+`make publish` confere fetch/push do origin, conta/permissões, base main e atualização em relação a origin/main. Valida o commit antes do push e interrompe se HEAD/árvore mudarem. Usa `make quality` enquanto não houver CI verde no HEAD atual de main e proteção comprovada; depois usa `make check` local e deixa os gates aprofundados para o CI. Publica somente a branch de trabalho e abre ou atualiza uma PR, preservando a descrição existente por padrão.
 
 Para fornecer título e corpo explícitos: `PR_TITLE="Título" PR_BODY_FILE=/caminho/descricao.md make publish`. O arquivo deve conter texto revisável, sem credenciais. A PR informa checks pendentes; o comando não aprova, faz merge, força push ou dispara deploy.
 

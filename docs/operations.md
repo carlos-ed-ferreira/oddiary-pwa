@@ -2,7 +2,7 @@
 
 ## Estado e diagnóstico
 
-GitHub verificado por API: `carlos-ed-ferreira/oddiary-pwa` é público, default branch main, conta atual com administração. Inicialmente não havia CI/proteção; a configuração operacional está sendo validada por PR. Somente a conta carlos-ed-ferreira aparece como colaboradora, portanto a revisão independente precisa de outra conta com escrita. Configurações de editor e ambiente que não pertencem à tarefa ficam fora dos commits.
+GitHub verificado por API: `carlos-ed-ferreira/oddiary-pwa` é público, default branch main, conta atual com administração. Proteção de main ativa, quality obrigatório do GitHub Actions, uma revisão independente e aprovação do último push, incluindo administradores. Squash exclusivo, remoção de branch e capacidade de auto-merge habilitados; a PR piloto permanece bloqueada para revisão. Alertas e atualizações de segurança estão habilitados. CI e PR estão registrados em IMPLEMENTATION.md. Somente a conta carlos-ed-ferreira aparece como colaboradora, portanto a revisão independente precisa de outra conta com escrita.
 
 Laravel Cloud: destino informado é aplicação `oddiary`, ambiente `production`. IDs de aplicação/ambiente, repositório/branch, runtime, comandos, workers, scheduler, storage e deploys precisam de consulta autenticada. Não há acesso CLI/token disponível nesta sessão. A documentação descreve PHP 8.4/Node 24, região us-east-1 e deploy por push; estes detalhes não estão confirmados no serviço.
 
@@ -14,7 +14,7 @@ DNS/TLS observados: apex e www resolvem para 103.133.1.1; nameservers a.sec.dns.
 
 Laravel Cloud usa API token criado nas configurações da organização, com permissões e recursos limitados. Disponibilize LARAVEL_CLOUD_TOKEN somente em canal local seguro, sem valor no Git ou chat. Consulte o [CLI oficial](https://github.com/laravel/cloud-cli) e a [autenticação API](https://laravel.com/cloud/docs/api/authentication). Comece com leitura de aplicações, ambientes, deployments e domínio; não altere variáveis ou origem durante o diagnóstico.
 
-Para Supabase, conecte o plugin correspondente ou forneça SUPABASE_ACCESS_TOKEN por canal local seguro com escopo de leitura. Banco usa credencial própria, que não deve ser extraída de outro checkout nem registrada. O [Management API](https://supabase.com/docs/reference/api/v1-list-all-projects) identifica projetos; confirme projeto/ref antes de consultar metadados. Uma conexão SQL pode verificar `SELECT current_database(), current_user, version()` em transação read-only, sem consultar dados de usuários. Compare o identificador do endpoint com o projeto confirmado.
+Para Supabase, conecte o plugin correspondente ou disponibilize SUPABASE_ACCESS_TOKEN por canal local seguro; nesta etapa use somente operações de leitura. Banco usa credencial própria, que não deve ser extraída de outro checkout nem registrada. O [Management API](https://supabase.com/docs/reference/api/v1-list-all-projects) identifica projetos; confirme projeto/ref antes de consultar metadados. Uma conexão SQL pode verificar `SELECT current_database(), current_user, version()` em transação read-only, sem consultar dados de usuários. Compare o identificador do endpoint com o projeto confirmado.
 
 ## Pré-flight e cutover
 

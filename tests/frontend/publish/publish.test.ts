@@ -106,3 +106,9 @@ it('reports newly created PRs before checks are registered', () => {
   expect(result.status, result.stderr).toBe(0);
   expect(result.stdout).toContain('pendentes de registro');
 });
+
+it('keeps the complete gate while main has no successful CI execution', () => {
+  const result = publish({ reliableCI: true, unprovenMain: true });
+  expect(result.status, result.stderr).toBe(0);
+  expect(result.calls).toContainEqual(['make', 'quality']);
+});

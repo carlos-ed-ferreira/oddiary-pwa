@@ -49,6 +49,8 @@ if (command === 'git') {
 if (command === 'gh') {
   if (args[0] === 'auth') result('', settings.unauthenticated ? 1 : 0);
   if (args[0] === 'repo') result(`${repo}\tmain\tADMIN`);
+  if (args[0] === 'api' && args[1].includes('/runs?'))
+    result(settings.reliableCI && !settings.unprovenMain ? '1' : '0');
   if (args[0] === 'api')
     result(
       settings.reliableCI

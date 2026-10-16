@@ -1,11 +1,17 @@
 # Pendências operacionais
 
+## Configurado e verificado
+
+- GitHub público `carlos-ed-ferreira/oddiary-pwa`, main principal. [PR piloto #1](https://github.com/carlos-ed-ferreira/oddiary-pwa/pull/1) criada por `make publish`.
+- Proteção consultada por API: check quality vinculado ao GitHub Actions (app 15368), branch atualizada, uma aprovação independente, aprovação do último push, reviews obsoletas descartadas e conversas resolvidas. Administradores sujeitos às regras, force-push/deleção proibidos, histórico linear.
+- Squash como única estratégia, branches removidas após merge, auto-merge habilitado como capacidade do repositório. PR bloqueada por REVIEW_REQUIRED; nenhum merge ou autoaprovação executado.
+- Alertas de vulnerabilidade e atualizações de segurança habilitados por API, sem pausa. Dependabot semanal Composer/npm/Actions/Docker preparado; atualizações de versão aguardam merge na principal.
+- `make quality` local passou: 4 testes PHP/17 asserções, 27 frontend e 2 smokes Chromium; auditorias sem vulnerabilidades e Gitleaks sem achados. Build sem dev PHP e caches Laravel executados em ambiente local isolado, sem migrations.
+
 ## Em validação
 
-- CI via PR piloto: workflow real, cache Docker/Composer/npm, gates pelo Makefile e smoke PWA. Registrar resultado remoto e duração antes de considerar funcional.
-- Proteção de main: aplicar required check quality após observar o nome real, uma revisão independente, aprovação do último push, descarte de reviews obsoletas, resolução de conversas e enforcement de administradores. Verificar configuração por API.
-- Publicação: testar `make publish` contra a PR piloto, tanto criação quanto atualização sem duplicação. Código não aprova nem faz merge.
-- Dependabot: configuração semanal por ecossistema preparada; version updates exigem merge na principal. Habilitar alertas/atualizações de segurança e verificar suporte efetivo.
+- [Primeira execução CI](https://github.com/carlos-ed-ferreira/oddiary-pwa/actions/runs/38959071692): quality aprovado no GitHub em aproximadamente 4 min 35 s, incluindo build frio, locks, todos os gates e 2 smokes PWA. A atualização do publicador exige nova execução no último commit.
+- Confirmar atualização da mesma PR via `make publish`, sem duplicação.
 
 ## Bloqueios e dependências
 

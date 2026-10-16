@@ -37,7 +37,9 @@ git merge-base --is-ancestor "origin/$base" HEAD || fail 'Atualize a branch com 
 head=$(git rev-parse HEAD)
 workflow=$(gh api "repos/$repo/actions/workflows/ci.yml" --jq '.state' 2>/dev/null || true)
 protected=$(gh api "repos/$repo/branches/$base/protection" --jq '.enforce_admins.enabled and .required_status_checks.strict and (.required_pull_request_reviews.required_approving_review_count >= 1) and ([.required_status_checks.checks[]?.context] | index("quality") != null)' 2>/dev/null || true)
-if [[ "$workflow" == active && "$protected" == true ]]; then
+main_head=$(git rev-parse "origin/$base")
+main_ci=$(gh api "repos/$repo/actions/workflows/ci.yml/runs?branch=$base&event=push&status=success&head_sha=$main_head&per_page=1" --jq '.workflow_runs | length' 2>/dev/null || true)
+if [[ "$workflow" == active && "$protected" == true && "$main_ci" == 1 ]]; then
     gate=check
 else
     gate=quality
