@@ -4,7 +4,10 @@ export default defineConfig({
   testDir: './tests/e2e',
   retries: 0,
   workers: 1,
-  use: { baseURL: 'http://localhost:8000', trace: 'retain-on-failure' },
+  use: {
+    baseURL: process.env.PLAYWRIGHT_BASE_URL ?? 'http://localhost:8000',
+    trace: 'retain-on-failure',
+  },
   projects: [
     {
       name: 'desktop-light',

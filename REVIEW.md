@@ -52,3 +52,15 @@ O worker não grava respostas em CacheStorage nem IndexedDB. APIs, POST, outras 
 - Nenhum secret, falha conhecida escondida, supressão injustificada ou documentação falsa.
 - Setup reproduzível e segunda execução não destrutiva verificados quando a infraestrutura mudar.
 - Fontes canônicas atualizadas e revisão independente necessária antes de merge/publicação.
+
+## CI e PRs
+
+O workflow CI tem o check estável `quality`. Executa setup com dependências dos locks e `make quality`: lint/sintaxe Bash, tipos/análise, suites via cobertura, auditorias/scanner, validação Docker, build e smoke PWA. As suites não são repetidas fora da cobertura. O custo atual é de segundos para os testes e minutos para runtime/downloads em runner frio; caches guardam somente imagem de tooling e arquivos de download, sem .env ou artifacts de produção.
+
+PRs, push em main e execução manual usam GITHUB_TOKEN de leitura. PRs obsoletas são canceladas; execuções de main não se cancelam. O CI não recebe credenciais Supabase/Cloud, não aplica migrations e não publica. O Compose de CI só troca diretórios de cache e mantém as versões do runtime. E2E amplo e mutation continuam seletivos/periódicos conforme a matriz; o smoke pequeno roda em cada PR pelo benefício concreto de validar PWA/build.
+
+A política de main exige uma revisão de outra conta com escrita, descarte de aprovações após novos commits, aprovação do último push, conversas resolvidas e quality verde sobre branch atualizada. Administradores não têm bypass; force-push e exclusão são proibidos. Squash é a estratégia de merge. Auto-merge só pode concluir após essas condições, sem autoaprovação. O estado remoto verificado é registrado em IMPLEMENTATION.md; arquivos locais não comprovam que uma regra esteja ativa.
+
+`make publish` usa o gate rápido somente quando consegue consultar workflow ativo na principal e proteção com quality/revisão/admins obrigatórios. Caso contrário exige o gate completo local. Testes de fronteira do script cobrem rejeições de branch/remoto/árvore/autenticação, falha de checks, corrida de HEAD e atualização de PR. A cobertura V8 continua medindo lógica JavaScript PWA; não representa cobertura das branches Bash do publicador.
+
+Dependabot propõe atualizações semanais Composer/npm/Actions/Docker. Patches/minors são agrupados por ecossistema; majors ficam separados. Toda atualização requer CI e revisão, inclusive correções de segurança; não há bot de autoaprovação. A ativação da configuração de atualizações de versão depende do merge do arquivo na principal.

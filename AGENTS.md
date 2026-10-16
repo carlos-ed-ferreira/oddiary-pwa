@@ -16,7 +16,7 @@ Dependências precisam de uso concreto, compatibilidade e avaliação de seguran
 
 Use `make` como interface principal. Comportamento testável segue RED → GREEN → REFACTOR com o menor teste afetado. Bugs reproduzíveis exigem regressão; refatorações usam os testes existentes como rede de segurança.
 
-Selecione testes por arquivos e dependências; amplie para mudanças críticas, transversais ou de impacto incerto. Não rode suíte completa, E2E completo ou mutation testing em cada ciclo. `make check` valida a alteração; `make quality` reúne os gates aprofundados. Enquanto não houver CI confiável, execute a validação local proporcional antes de concluir.
+Selecione testes por arquivos e dependências; amplie para mudanças críticas, transversais ou de impacto incerto. Não rode suíte completa, E2E completo ou mutation testing em cada ciclo. `make check` valida a alteração; `make quality` reúne os gates aprofundados no CI e na verificação local completa. `make publish` exige branch de trabalho commitada e limpa, origin correto e gh autenticado; nunca use push direto à principal ou force-push. Enquanto não houver CI confiável, execute a validação local proporcional antes de concluir.
 
 Mudanças de runtime exigem setup e `make docker-check`. Mudanças de PWA exigem testes do worker e smoke de navegador com assets atuais. Mutation é pontual/periódica em lógica relevante. Não enfraqueça checks para obter sucesso; informe comandos, resultados e limitações reais.
 

@@ -1,0 +1,5 @@
+services:
+  app:
+    volumes:
+      - ./storage/app/private/ci-cache/composer:/home/oddiary/.composer
+      - ./storage/app/private/ci-cache/npm:/home/oddiary/.npm

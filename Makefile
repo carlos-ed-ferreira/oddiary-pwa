@@ -8,7 +8,7 @@ APP_UP := $(shell $(COMPOSE) ps --status running --quiet app 2>/dev/null)
 RUN := $(COMPOSE) $(if $(APP_UP),exec,run --rm) -T app
 ARGS ?=
 
-.PHONY: help env install setup up down dev shell assets test test-backend test-frontend test-e2e lint format analyse check quality coverage security docker-check database-up publish
+.PHONY: help env install setup key up down dev shell assets test test-backend test-frontend test-e2e lint format analyse check quality coverage security docker-check database-up publish
 help: ## List commands
 	@awk 'BEGIN {FS = ":.*## "} /^[a-zA-Z_-]+:.*## / {printf "%-20s %s\n", $$1, $$2}' $(MAKEFILE_LIST)
 env: ## Create a local environment if absent
@@ -19,9 +19,11 @@ install: ## Install exactly the dependency locks
 setup: env ## Prepare a fresh clone without external services or migrations
 	$(COMPOSE) build app
 	$(MAKE) install
-	@$(RUN) php scripts/ensure-key.php
+	$(MAKE) key
 	$(MAKE) assets
 	$(MAKE) up
+key: env ## Generate the application key only when absent
+	$(RUN) php scripts/ensure-key.php
 up: ## Start only the application and wait for health
 	$(COMPOSE) up -d --wait app
 down: ## Stop this project, preserving volumes
@@ -43,6 +45,8 @@ format: ## Apply PHP and text formatters
 	$(RUN) vendor/bin/pint
 	$(RUN) npm run format
 lint: ## Verify formatting and ESLint
+	$(RUN) bash -n scripts/publish.sh
+	$(RUN) bash -n scripts/build-production.sh
 	$(RUN) vendor/bin/pint --test
 	$(RUN) npm run format:check
 	$(RUN) npm run lint
@@ -67,6 +71,5 @@ docker-check: ## Validate Compose, build checks and application readiness
 test-e2e: assets up ## Validate PWA in Chromium, narrow with ARGS
 	$(COMPOSE) --profile e2e run --rm playwright $(ARGS)
 quality: lint analyse coverage security docker-check test-e2e ## Run all quality gates
-publish: ## Publish (requires PR workflow configuration)
-	@echo 'Publish is not configured. See IMPLEMENTATION.md for prerequisites and PR workflow.' >&2
-	@exit 2
+publish: ## Validate, push a work branch and create or update its PR
+	./scripts/publish.sh
