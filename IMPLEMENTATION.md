@@ -1,45 +1,27 @@
-# Plano de implementação
+# Pendências operacionais
 
-## Infraestrutura operacional
+## Configurado e verificado
 
-| Ordem | Entrega                                             | Critério de aceite                                                                                                                     |
-| ----- | --------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------- |
-| 1     | Validar remoto, autenticação e permissões           | Origin correto, acesso confirmado, branches e destino de push verificados                                                              |
-| 2     | Configurar branches e PRs                           | Principal protegida, checks obrigatórios e revisão independente; PR comprova bloqueio sem aprovação/checks                             |
-| 3     | Ativar GitHub Actions pelos comandos do Makefile    | Setup desde clone, caches por lock/runtime, lint, análise, tipos, cobertura, segurança, build e PWA passam                             |
-| 4     | Implementar `make publish`                          | Pré-requisitos verificados; falhas locais impedem push; PR criada/atualizada sem duplicação ou deploy implícito                        |
-| 5     | Configurar atualização de dependências e auto-merge | PRs com testes, auditorias e revisão independente; merge condicionado a todos os gates e aprovações                                    |
-| 6     | Auditar e associar Laravel Cloud                    | Runtime, compute, Git/branch, gatilho, build/start, workers, scheduler, storage e logs verificados; deploy espera os gates             |
-| 7     | Preparar Supabase e recuperação                     | Projeto, plano, região, PostgreSQL, pooler/TLS, limites, roles, extensions e Data API/RLS confirmados; backup com restauração validada |
-| 8     | Definir schema e procedimento de banco              | Migrations testadas; eventual recriação tem ação exata, impacto, backup, recuperação e aprovação específica                            |
-| 9     | Configurar ambiente de produção                     | Secrets no servidor, APP_KEY própria, debug falso, cookies seguros, SSL e storage persistente quando necessário                        |
-| 10    | Configurar domínio, TLS e publicação                | Registros e recuperação documentados; certificado/redirecionamentos verificados; health, assets, PWA e logs validados após deploy      |
-| 11    | Validar rollback                                    | Revisão anterior identificada; rollback de código e recuperação do banco tratados separadamente, com responsáveis e limites definidos  |
+- GitHub público `carlos-ed-ferreira/oddiary-pwa`, main principal. [PR piloto #1](https://github.com/carlos-ed-ferreira/oddiary-pwa/pull/1) criada por `make publish`.
+- Proteção consultada por API: check quality vinculado ao GitHub Actions (app 15368), branch atualizada, uma aprovação independente, aprovação do último push, reviews obsoletas descartadas e conversas resolvidas. Administradores sujeitos às regras, force-push/deleção proibidos, histórico linear.
+- Squash como única estratégia, branches removidas após merge, auto-merge habilitado como capacidade do repositório. PR bloqueada por REVIEW_REQUIRED; nenhum merge ou autoaprovação executado.
+- Alertas de vulnerabilidade e atualizações de segurança habilitados por API, sem pausa. Dependabot semanal Composer/npm/Actions/Docker preparado; atualizações de versão aguardam merge na principal.
+- `make quality` local passou: 4 testes PHP/17 asserções, 29 frontend e 2 smokes Chromium; auditorias sem vulnerabilidades e Gitleaks sem achados. Build sem dev PHP e caches Laravel executados em ambiente local isolado, sem migrations.
 
-Recursos a verificar:
+## Evidências de execução
 
-- GitHub: `https://github.com/carlos-ed-ferreira/oddiary-pwa.git`, configurado como origin local.
-- Laravel Cloud: aplicação `oddiary`, ambiente `production`.
-- Supabase: confirmar identificador do projeto e conectividade mediante acesso autorizado.
-- Domínio: `oddiary.com.br`; confirmar ownership, provedor DNS, registros/TTL, DNSSEC e associação Cloud.
+- [Primeira execução CI](https://github.com/carlos-ed-ferreira/oddiary-pwa/actions/runs/38959071692): quality aprovado no GitHub em aproximadamente 4 min 35 s, incluindo build frio, locks, todos os gates e 2 smokes PWA. Os checks da PR identificam a execução do último commit.
+- `make publish` criou a PR #1 após validação completa. Edição de metadados usa API REST, com regressão para a consulta descontinuada do gh pr edit; pushes atualizam a mesma branch/PR. O resultado remoto e a revisão do último commit devem ser consultados na PR antes de merge.
 
-Configuração remota, proteção de branches, gatilhos de deploy e backups ainda precisam de verificação. Laravel Cloud usa runtime próprio; conferir versões e comandos no serviço. Operações em produção seguem a política de aprovação em AGENTS.md.
+## Bloqueios e dependências
 
-## Contrato de `make publish`
+1. Revisão independente: somente carlos-ed-ferreira tem escrita hoje. Uma segunda conta com escrita precisa revisar a PR; não fazer autoaprovação ou bypass para concluir o piloto.
+2. Laravel Cloud: acesso autenticado necessário para identificar aplicação/ambiente e preparar checkpoint concreto de troca de origem, build, variáveis e deploy. Não há cutover autorizado.
+3. Supabase: conexão/plugin/token e projeto confirmado necessários para inventário read-only e verificação SQL. Reset não é necessário para o scaffold e não será executado sem necessidade, alvo, recuperação e aprovação específicos.
+4. Produção: validar configuração, backups e rollback antes de aprovação. DNS/TLS e o 403 observado estão documentados em docs/operations.md; saúde e PWA HTTPS não estão comprovados.
 
-O alvo permanece indisponível até configurar o fluxo. Sua implementação deve:
+Os procedimentos, recursos e pré-requisitos de cutover estão em [docs/operations.md](docs/operations.md). Esse é o assunto canônico de operação; critérios de CI/revisão ficam em REVIEW.md.
 
-1. Exigir árvore Git limpa, alterações commitadas, branch de trabalho diferente da principal, remoto aprovado e base explícita. Não adicionar arquivos ou gerar commits automaticamente.
-2. Verificar autenticação, permissões, templates, políticas e checks obrigatórios.
-3. Executar as verificações locais necessárias no mesmo commit que será enviado. Alteração de HEAD ou da árvore invalida o resultado.
-4. Informar destino/commit, fazer push da branch e criar ou atualizar a PR dessa branch/base, descrevendo problema, comportamento, validação e riscos.
-5. Reportar URL e checks pendentes. Auto-merge depende das políticas e aprovações válidas, sem bypass de gates.
+## Depois da infraestrutura
 
-## Produto
-
-Após preparar a operação:
-
-- Definir requisitos funcionais, contratos, modelo de dados e critérios de segurança.
-- Aplicar a referência visual a cores, tipografia e componentes, organizando a experiência pelas tarefas mobile/desktop.
-- Implementar fatias pequenas com TDD, autenticação/autorização e isolamento antes de dados de usuário, com migrations PostgreSQL testadas.
-- Definir persistência local e sincronização conforme os requisitos e decisões de docs/pwa.md.
+Definir requisitos funcionais, contratos, dados, segurança e identidade visual. Implementar fatias pequenas com TDD, isolamento/autorização e migrations PostgreSQL testadas. Persistência e sincronização seguem as decisões de docs/pwa.md. Não antecipar funcionalidades antes do aceite operacional.

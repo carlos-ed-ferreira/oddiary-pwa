@@ -1,0 +1,98 @@
+{
+  "git.addAICoAuthor": "off",
+  "editor.formatOnSave": true,
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "editor.codeActionsOnSave": {
+    "source.fixAll.eslint": "explicit"
+  },
+  "[javascript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[typescript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[typescriptreact]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[json]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[jsonc]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[css]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[markdown]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[yaml]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[php]": {
+    "editor.defaultFormatter": "open-southeners.laravel-pint"
+  },
+  "[blade]": {
+    "editor.defaultFormatter": "shufo.vscode-blade-formatter"
+  },
+  "laravel-pint.runInDocker": true,
+  "laravel-pint.dockerContainerName": "oddiary-pwa-app-1",
+  "laravel-pint.dockerContainerRootPath": "/var/www/html",
+  "php.validate.enable": false,
+  "intelephense.environment.phpVersion": "8.4.24",
+  "intelephense.files.exclude": [
+    "**/node_modules/**",
+    "**/public/build/**",
+    "**/storage/framework/**",
+    "**/.git/**"
+  ],
+  "bladeFormatter.format.indentSize": 4,
+  "eslint.useFlatConfig": true,
+  "tailwindCSS.experimental.configFile": "resources/css/app.css",
+  "cSpell.language": "en,pt,pt_BR",
+  "cSpell.words": [
+    "bcmath",
+    "deptrac",
+    "gitleaks",
+    "inertiajs",
+    "intelephense",
+    "jscpd",
+    "larastan",
+    "mbstring",
+    "Oddiary",
+    "pcov",
+    "pestphp",
+    "pgsql",
+    "phpmd",
+    "phpstan",
+    "tailwindcss",
+    "trixie",
+    "xdebug"
+  ],
+  "search.exclude": {
+    "**/coverage": true,
+    "**/node_modules": true,
+    "**/playwright-report": true,
+    "**/public/build": true,
+    "**/storage/framework": true,
+    "**/test-results": true,
+    "**/vendor": true,
+    "**/.phpstan-cache": true,
+    "**/storage/logs": true,
+    "**/storage/app/private": true
+  },
+  "files.watcherExclude": {
+    "**/coverage/**": true,
+    "**/node_modules/**": true,
+    "**/public/build/**": true,
+    "**/storage/framework/**": true,
+    "**/vendor/**": true,
+    "**/.phpstan-cache/**": true,
+    "**/playwright-report/**": true,
+    "**/test-results/**": true,
+    "**/storage/logs/**": true,
+    "**/storage/app/private/**": true
+  },
+  "laravel-pint.fallbackToGlobalBin": false,
+  "typescript.tsdk": "node_modules/typescript/lib"
+}

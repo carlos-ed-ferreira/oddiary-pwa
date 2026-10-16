@@ -38,6 +38,12 @@ Aplicação técnica em <http://localhost:8010>; manifest em `/manifest.webmanif
 
 `make database-up` inicia PostgreSQL 18.6 opcional no perfil `database`, acessível a app como `postgres:5432`. Usa exclusivamente o volume local `oddiary-pwa_postgres-data`. Não contém schema de produto, migrations ou dados de produto. A inicialização e os testes atuais não precisam desse serviço. Quando surgir SQL, introduza testes de integração PostgreSQL com banco separado e nunca substitua sem avaliar semântica por SQLite.
 
+## VS Code
+
+Instale as recomendações de `.vscode/extensions.json` após `make setup`. Prettier/ESLint usam as dependências locais e o TypeScript usa `node_modules/typescript/lib`. PHP usa Pint no container `oddiary-pwa-app-1`, que deve estar iniciado por `make up`; se personalizar o nome do projeto Compose, ajuste essa configuração do editor. O Pint usa o preset Laravel padrão, como `make lint`, sem configuração adicional ou fallback global.
+
+As extensões de Vitest/Playwright são auxiliares de edição e descoberta; a execução reproduzível dos testes e checks continua pelos comandos Make no Docker. Extensões não são instaladas automaticamente pelo repositório.
+
 ## Configuração local
 
 `.env.example` é a referência executável. `.env` é ignorado e gerado localmente a partir desse exemplo.
@@ -75,7 +81,7 @@ make test-e2e           # assets atuais + Chromium desktop/mobile
 make security           # audits online e gitleaks local redigido
 make docker-check       # Compose, BuildKit e readiness
 make quality            # gate aprofundado local
-make publish            # indisponível até configurar o fluxo de PRs
+make publish            # valida, envia a branch e abre/atualiza a PR
 ```
 
 `vite.config.ts` lê VITE_PORT da configuração local e mantém porta/HMR alinhados ao Compose. `make test-e2e` usa Chromium da imagem oficial, sem download de browsers por install script. Instalação npm usa `npm ci` e scripts de dependências desativados. Testes PHP usam `withoutVite`; build não é pré-condição da suíte backend.
@@ -92,8 +98,22 @@ make publish            # indisponível até configurar o fluxo de PRs
 - [IMPLEMENTATION.md](IMPLEMENTATION.md): prioridades operacionais e contrato de publish.
 - [docs/pwa.md](docs/pwa.md): limites da PWA e decisões local-first pendentes.
 
-## Publicação
+## Publicação por PR
 
-A configuração operacional de GitHub, Laravel Cloud, Supabase e domínio está planejada em [IMPLEMENTATION.md](IMPLEMENTATION.md). `make publish` permanece protegido enquanto o fluxo de PRs não estiver configurado.
+Requisitos adicionais: GitHub CLI (`gh auth login`), Git e Docker disponíveis no host; acesso de escrita ao origin deste projeto. Use uma branch de trabalho, com alterações commitadas e árvore limpa:
 
-O desenvolvimento local não exige credenciais de serviços de produto. Em produção, use secrets gerenciados no servidor, HTTPS, cookies seguros, SSL para o banco e backup recuperável. Laravel Cloud usa runtime próprio, que precisa ser validado separadamente do Docker local.
+```sh
+git switch -c chore/minha-alteracao
+make check
+git add <arquivos-da-alteracao>
+git commit -m "Descreva a alteração"
+make publish
+```
+
+`make publish` confere fetch/push do origin, conta/permissões, base main e atualização em relação a origin/main. Valida o commit antes do push e interrompe se HEAD/árvore mudarem. Usa `make quality` enquanto não houver CI verde no HEAD atual de main e proteção comprovada; depois usa `make check` local e deixa os gates aprofundados para o CI. Publica somente a branch de trabalho e abre ou atualiza uma PR, preservando a descrição existente por padrão.
+
+Para fornecer título e corpo explícitos: `PR_TITLE="Título" PR_BODY_FILE=/caminho/descricao.md make publish`. O arquivo deve conter texto revisável, sem credenciais. A PR informa checks pendentes; o comando não aprova, faz merge, força push ou dispara deploy.
+
+O workflow CI executa `make quality` em PRs para main e pushes à principal, com permissão de leitura, imagens fixadas e caches de runtime/arquivos baixados de Composer/npm. Não usa banco de produção. O teste técnico de navegador também pode usar `PLAYWRIGHT_BASE_URL` para validar um deploy autorizado.
+
+O processo de revisão e os gates estão em [REVIEW.md](REVIEW.md). Infraestrutura e procedimentos de produção estão em [docs/operations.md](docs/operations.md); pendências ficam em [IMPLEMENTATION.md](IMPLEMENTATION.md).
