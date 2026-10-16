@@ -38,6 +38,12 @@ Aplicação técnica em <http://localhost:8010>; manifest em `/manifest.webmanif
 
 `make database-up` inicia PostgreSQL 18.6 opcional no perfil `database`, acessível a app como `postgres:5432`. Usa exclusivamente o volume local `oddiary-pwa_postgres-data`. Não contém schema de produto, migrations ou dados de produto. A inicialização e os testes atuais não precisam desse serviço. Quando surgir SQL, introduza testes de integração PostgreSQL com banco separado e nunca substitua sem avaliar semântica por SQLite.
 
+## VS Code
+
+Instale as recomendações de `.vscode/extensions.json` após `make setup`. Prettier/ESLint usam as dependências locais e o TypeScript usa `node_modules/typescript/lib`. PHP usa Pint no container `oddiary-pwa-app-1`, que deve estar iniciado por `make up`; se personalizar o nome do projeto Compose, ajuste essa configuração do editor. O Pint usa o preset Laravel padrão, como `make lint`, sem configuração adicional ou fallback global.
+
+As extensões de Vitest/Playwright são auxiliares de edição e descoberta; a execução reproduzível dos testes e checks continua pelos comandos Make no Docker. Extensões não são instaladas automaticamente pelo repositório.
+
 ## Configuração local
 
 `.env.example` é a referência executável. `.env` é ignorado e gerado localmente a partir desse exemplo.
