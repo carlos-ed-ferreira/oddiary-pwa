@@ -1,0 +1,112 @@
+# Roteiro de reconstrução
+
+## Estado e condições de execução
+
+Este é um roteiro de implementação futura, não autorização para executá-lo nesta análise. O [inventário](INVENTORY.md) define capacidades/evidências e [OPEN_QUESTIONS.md](OPEN_QUESTIONS.md) guarda decisões. AGENTS.md/REVIEW.md do novo projeto continuam canônicos para engenharia. Não duplicar thresholds aqui nem importar os gates da fonte.
+
+Consulta de 16/10/2026: PR operacional #1 aberta e CI aprovado em `1e06571`. A branch documental deriva dela por autorização, sem commit/push. **Antes de preparar entrega integrada, aguardar o merge da PR #1 e atualizar docs/rebuild-plan a partir de main.** Revalidar Git/PR para não trabalhar com uma suposição de merge. Não executar merge ou resolver conflitos descartando trabalho do responsável. Se squash tiver ocorrido e a atualização não for fast-forward, inspecionar a divergência e preservar os documentos antes de escolher rebase/merge.
+
+P01 depende do aceite operacional previsto em IMPLEMENTATION.md. Esta análise pode ser concluída e revisada localmente antes disso. Abertura de implementação funcional antes daquele aceite exige decisão explícita do responsável, não é inferida por este plano. Produção, credenciais e cutover têm checkpoints próprios; nenhum teste ou prompt usa o Supabase produtivo como banco de validação.
+
+Stack preservada: Laravel 13.30.0/PHP 8.4.24, Inertia Laravel 3.3.1/adapter React 3.7.0, React 19.2.8, TS 5.9.3, Tailwind 4.3.3 e Vite 8.2.1, conforme locks atuais. A fonte tem Laravel 13.26.1: registrar a diferença, manter a versão nova já adotada. Fortify/AI/passkeys ausentes serão dependências dos consumidores, com avaliação de compatibilidade e revisão, sem upgrade estrutural por conveniência.
+
+## Sequência dos 17 prompts
+
+Os seis primeiros prompts são backend testável para reduzir retrabalho enquanto falta a referência visual. A partir de P07, entregar fatias de experiência usando contratos já aprovados. Nenhuma etapa determina copiar uma tela antiga. Não há obrigação de instalar novas bibliotecas quando a stack atual resolve o comportamento.
+
+| Prompt e arquivo                                                                           | Meta/valor observável                                                      | Dependências                              | Persistência/decisões                                                         | Aceite central                                                                     |
+| ------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------- | ----------------------------------------- | ----------------------------------------------------------------------------- | ---------------------------------------------------------------------------------- |
+| P01 [01-identidade-persistencia.md](PROMPTS/01-identidade-persistencia.md)                 | Login/logout/reset/verificação/confirmar senha testáveis sem UI definitiva | aceite operacional, Q01                   | users/reset; banco efêmero isolado; Fortify consumidor real                   | auth/rate/CSRF/sessão e política de verificação comprovados por testes; sem signup |
+| P02 [02-dinheiro-preferencias.md](PROMPTS/02-dinheiro-preferencias.md)                     | Valores exatos e unidade configurável sem reescrever passado               | P01; Q02/Q06                              | campos moeda/unidade do usuário; Money/Odds/casts                             | decimais/currency/zeros/overflow e gramática aprovada testados                     |
+| P03 [03-casas-tipos.md](PROMPTS/03-casas-tipos.md)                                         | Configuração pessoal isolada e reutilizável pelo diário                    | P02; Q04                                  | bookmakers/accounts/bet_types; seed mínimo de catálogo se aprovado            | duplicação/arquivo/permissões/FKs e CRUD permitido comprovados                     |
+| P04 [04-catalogo-normalizacao.md](PROMPTS/04-catalogo-normalizacao.md)                     | Reusar conceitos e wording sem contaminar catálogo global                  | P01; Q05                                  | somente referências com consumidor de aposta/import; aliases contextualizados | resolver determinístico, candidatos e escopo/contexto testados                     |
+| P05 [05-bilhetes-liquidacao.md](PROMPTS/05-bilhetes-liquidacao.md)                         | Gravar/corrigir/excluir single/múltipla com resultado coerente             | P02/P03/P04; Q06/Q07                      | bets/legs, generated P&L, constraints, snapshots                              | stake única, data última leg, retorno/odds, rollback atômico e ownership           |
+| P06 [06-banca-movimentos.md](PROMPTS/06-banca-movimentos.md)                               | Saldo explicável, movimentações e reconciliação                            | P05; Q03/Q07                              | transactions/reconciliations; sem copiar histórico                            | exemplos contábeis, corte temporal e concorrência aprovados/testados               |
+| P07 [07-referencia-visual-identidade-ui.md](PROMPTS/07-referencia-visual-identidade-ui.md) | Acesso funcional acessível e padrões visuais mínimos em uso                | P01/P02; V01, R01/R02                     | sem dados de domínio novos; locale/tema por dispositivo                       | referência analisada, auth/idiomas/temas/mobile e erros verificados                |
+| P08 [08-diario-configuracao-ui.md](PROMPTS/08-diario-configuracao-ui.md)                   | Registrar e revisar apostas e configuração pessoal                         | P03/P05/P07                               | sem migration de conveniência de UI                                           | query/paginação/abertos primeiro, formulários e confirmação mobile                 |
+| P09 [09-banca-ui.md](PROMPTS/09-banca-ui.md)                                               | Entender saldos e reconciliar por conta                                    | P06/P07                                   | sem reset/alteração de schema produtivo                                       | movimentos/efeitos visíveis, datas inequívocas, confirmação/recuperação de falha   |
+| P10 [10-dashboard.md](PROMPTS/10-dashboard.md)                                             | Entender resultado, filtros e série temporal                               | P05/P07; Q03/Q10                          | índices só com query concreta; sem novas tabelas de métricas por princípio    | fórmulas, filtros, moeda, série completa e valores acessíveis coerentes            |
+| P11 [11-parser-importacao.md](PROMPTS/11-parser-importacao.md)                             | Extração/normalização genérica validada com provedor substituível          | P02/P04/P05; Q03/Q06/Q08, R03             | sem tabelas de batch ainda; SDK AI no consumidor                              | schema sem BetType, falhas distintas e rejeição parcial sem chamadas reais         |
+| P12 [12-rascunhos-confirmacao.md](PROMPTS/12-rascunhos-confirmacao.md)                     | Revisar, deduplicar e confirmar lote com integridade                       | P03/P05/P11; Q05/Q08/Q09                  | batches/drafts/JSONB/refs; política transacional explícita                    | nenhum bet antes da confirmação; correção revalidada; replay/concorrência seguros  |
+| P13 [13-casas-imagens-importacao.md](PROMPTS/13-casas-imagens-importacao.md)               | Tratar formatos específicos e screenshots sem persistência indevida        | P11/P12; Q03/Q08/Q09, R03                 | guidance confiável; sem bucket ou worker especulativo                         | regras Pinnacle/Superbet/BetBoom e limites/retentativa/imagens testados            |
+| P14 [14-importacao-ui.md](PROMPTS/14-importacao-ui.md)                                     | Importar texto/imagem, corrigir e confirmar no mobile                      | P07/P12/P13; Q11                          | contrato aprovado, sem cache de payload privado                               | gravações pendentes/falhas/casa ausente/duplicados/relê confirmados por E2E fake   |
+| P15 [15-onboarding.md](PROMPTS/15-onboarding.md)                                           | Ativação opcional usando fluxos existentes                                 | P08/P09/P14; Q12                          | marcador de visto/concluído só conforme decisão                               | pular/sair/retomar aprovados, exposição correta e reconciliação após revisão       |
+| P16 [16-perfil-seguranca.md](PROMPTS/16-perfil-seguranca.md)                               | Gerir perfil, senha, 2FA/passkeys e exclusão com segurança                 | P01/P07; Q13                              | colunas 2FA/passkeys; cascatas verificadas                                    | desafios/replay/origin/ownership/recuperação e exclusão testados sem secrets       |
+| P17 [17-qualificacao-operacional.md](PROMPTS/17-qualificacao-operacional.md)               | Qualificar reconstrução e preparar checkpoint real de publicação           | P10/P14/P15/P16, demais contratos aceitos | nenhum reset/migration remota autorizados por este prompt                     | rastreabilidade/E2E/PWA/rede e runbook; evidências reais versus pendências         |
+
+P04 pode avançar independentemente de P03; P07 pode seguir após identidade/preferências, mesmo que banca ainda não esteja pronta; P16 pode ser antecipado após P07. A ordem numérica é uma execução linear válida, sem dependência circular. Não publicar uma migração de contas com 2FA/passkeys para uma versão que ainda não as suporta.
+
+## Arquitetura proporcional e fatias
+
+Manter Laravel/Inertia como fronteira web e servidor como autoridade de autorização/cálculo. Módulos surgem com comportamento: identidade em User/HTTP; primitivas exatas em Shared quando consumidas; catálogo e import como fronteiras distintas; apostas, banca e analytics podem permanecer coesos na mesma consistência transacional. A direção Import → Betting → Catalog → Shared é referência observada, não obrigação de criar diretórios vazios. Atualizar Deptrac quando código real criar fronteiras; impedir ciclos sem estreitar artificialmente classes para métricas.
+
+Não copiar todos os modelos/controllers, starter kit, scripts ou migrations históricas. Transformar requisitos aprovados em novos testes, selecionando trechos reutilizáveis somente após avaliar isolamento, precisão e dependências. Dinheiro/odds cruzam transporte como strings e Money com moeda; React não calcula verdade financeira. Atributos de usuário não devem ser compartilhados integralmente em props sem revisão de campos.
+
+Mobile-first exige composição por tarefa, teclado/toque, feedback e textos acessíveis, não layout definido por tabela ou wizard antigo. P07 e cada UI posterior estão em **AGUARDA REFERÊNCIA VISUAL** até análise/aceite da referência fornecida. As seções funcionais/backend dos respectivos prompts continuam específicas. Sem referência, não produzir telas provisórias de produto para contornar esse gate.
+
+Local-first fica no limite descrito em docs/pwa.md. Offline atual é fallback técnico; não enfileirar writes financeiros/imports/delete, persistir credenciais, dados de usuário ou screenshots por conveniência. Se requisitos futuros exigirem persistência local, preparar decisão separada de retenção por usuário/dispositivo, logout, versão, idempotência, conflito e recuperação antes de qualquer implementação.
+
+## Matriz de cobertura
+
+Todo ID do inventário está mapeado. A presença na coluna não significa implementação concluída. Uma capacidade pode atravessar backend/UI/qualificação, com um único contrato canônico no inventário e decisão registrada quando divergir.
+
+| Capacidade | Prompts                           | Limite ou adiamento explícito                                                                                                       |
+| ---------- | --------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
+| IDN-01     | P01, P07, P17                     | sem cadastro público                                                                                                                |
+| IDN-02     | P01, P07, P16, P17                | Q01; entrega real de mail no checkpoint, não em testes                                                                              |
+| IDN-03     | P16, P17                          | Q13 antes de exclusão/cascatas                                                                                                      |
+| IDN-04     | P16, P17                          | não habilitar credenciais migradas antes da implementação                                                                           |
+| IDN-05     | P16, P17                          | teste virtual e validação real de dispositivo distinguidos                                                                          |
+| CFG-01     | P07, P17                          | por dispositivo; sincronização de preferências não inferida                                                                         |
+| CFG-02     | P02, P08, P12                     | Q02, sem FX                                                                                                                         |
+| ACC-01     | P03, P08, P15                     | criação contextual além do fluxo confirmado adiada, ver D13                                                                         |
+| ACC-02     | P03, P08                          | Q04; sem delete da conta de casa                                                                                                    |
+| TYP-01     | P03, P08                          | preservar contratos backend; UI de editar/ordenar/arquivar exige aceite de ampliação em relação à UI observada                      |
+| CAT-01     | P04, P05, P12                     | Participant/pivot, hierarquia de competição e verified_at sem consumidor demonstrado ficam adiados; não criar CRUD/moderação global |
+| CAT-02     | P04, P12, P14                     | Q05; busca externa e promoção global adiadas                                                                                        |
+| CAT-03     | P04, P05, P11, P13                | normalização comum com diferenças manual/import explícitas                                                                          |
+| BET-01     | P05, P08, P12                     | stake por bilhete; sem liquidação de leg                                                                                            |
+| BET-02     | P05, P06, P08, P10                | Q06/Q07                                                                                                                             |
+| BET-03     | P05, P08                          | Q07; sem trocar exclusão por soft delete sem decisão                                                                                |
+| BET-04     | P08, P17                          | multi-select, batch actions, cell editing e virtualização não implementados na fonte, adiados                                       |
+| BNK-01     | P06, P09, P17                     | sem endpoint de edição/transferências/bônus inferidos                                                                               |
+| BNK-02     | P06, P09, P17                     | saldos por moeda/conta e autorização no chamador                                                                                    |
+| BNK-03     | P06, P09, P15                     | Q07; sem histórico/undo novo por suposição                                                                                          |
+| ANA-01     | P10, P17                          | métricas exatas, sem forecast                                                                                                       |
+| ANA-02     | P10                               | Q03; datas inclusivas e intervalo explícito                                                                                         |
+| ANA-03     | P10                               | breakdown esporte/competição/mercado não existe, adiado                                                                             |
+| ANA-04     | P10, P17                          | Q10, distinguir janela do gráfico e dos cards                                                                                       |
+| IMP-01     | P13, P14                          | limites de runtime verificados; sem CSV/API de casa                                                                                 |
+| IMP-02     | P11, P13                          | adapter fake por padrão; provedor real só com autorização/canal seguro                                                              |
+| IMP-03     | P11, P13                          | Q03/Q06/Q08; sem data/seleção inventadas                                                                                            |
+| IMP-04     | P13                               | formatos testados, sem promessa de suporte a toda mudança da casa                                                                   |
+| IMP-05     | P12, P14                          | Q05/Q09/Q11; alternativas expostas conforme decisão                                                                                 |
+| IMP-06     | P12, P14                          | releitura explícita, sem reenvio automático de imagem perdida                                                                       |
+| IMP-07     | P12, P14, P17                     | idempotência não equivale a unique de fingerprint                                                                                   |
+| IMP-08     | P11, P12, P13, P14                | retenção definida em Q09; sem expor excerpt ao navegador                                                                            |
+| ONB-01     | P15, P17                          | Q12; não marcar concluído por conveniência técnica                                                                                  |
+| PUB-01     | P07, P17                          | acesso/orientação funcional, sem copiar marketing/layout                                                                            |
+| UX-01      | P07, P08, P09, P10, P14, P15, P16 | i18n/temas/erro e mobile em cada fatia                                                                                              |
+| DAT-01     | P01, P03, P13, P17                | fixtures sintéticas e seed mínimo; provisionamento real separado                                                                    |
+
+## Verificação por nível
+
+1. **Ciclo rápido:** Pest/Vitest do arquivo ou filtro novo, confirmar RED por causa esperada, implementar GREEN e refatorar sobre os mesmos testes. Exemplos executáveis estão em cada prompt; caminhos novos são entregáveis propostos, não arquivos já existentes.
+2. **Validação da alteração:** make check, build quando frontend/contrato de bundle mudar, smoke afetado quando UI/PWA/runtime mudar. Persistência, generated columns, JSONB, NULLS NOT DISTINCT e agregação usam PostgreSQL isolado. Não substituir suas garantias por SQLite. Selecionar testes por consumidores transitivos e ampliar em cálculo/segurança/concorrência.
+3. **Gates aprofundados:** make quality canônico e CI, sem inventar comandos hoje ausentes. Cobertura segue REVIEW, com includes ampliados à lógica real; os 100% do scaffold não são meta do produto. Mutation permanece pontual em regras críticas quando ferramenta for instalada/validada e benefício justificar, nunca todo ciclo TDD. E2E amplo só nas qualificações/impacto transversal.
+
+P01 precisa adaptar a infraestrutura existente de teste com guardas de alvo local/efêmero, credenciais exclusivas e proteção contra DB_URL remoto. Os 4 testes PHP do scaffold devem continuar independentes de banco quando possível. Banco de integração e navegador não podem compartilhar dados reais nem resetar banco de desenvolvimento por acidente. Cachear downloads/tooling, não estado de sessão/banco de usuário.
+
+## Dados e checkpoints operacionais
+
+- **C0, antes de P01:** aceite operacional/PR #1 e atualização desta branch; Q01; confirmar testes efêmeros. Sem copiar .env nem keys.
+- **C1, por migration local:** documento de schema mínimo do consumidor, constraints/índices justificados, clean migration em banco disposable, rollback testado quando sem perda. Não executar downs históricos destrutivos para simular restauração.
+- **C2, antes de integração com serviços:** autenticação de leitura e IDs inequívocos Cloud app/environment, Supabase ref/DB/schema e domínio; inventário de objetos gerenciados, auth/storage/RLS/Data API, variáveis por nome e mecanismos de backup/restore. Fonte de procedimento: docs/operations.md. Código/schema e produção podem divergir.
+- **C3, antes de dados/cutover:** decidir preservação de contas, passkeys, dados históricos e catálogo. Se banco novo não agrega necessidade de reset, não apagá-lo. Aprovação específica para cada origem de deploy/secret/DNS/schema alterado, com recurso, ação, consequência, backup viável e plano de volta. Não escrever comandos DROP genéricos nem usar restore não testado como promessa.
+- **C4, após publicação futura autorizada:** revisão aprovada → merge protegido → deploy de referência aprovada; /up, assets, HTTPS, headers no-store privados, manifest/worker, atualização entre builds e smokes sem gravar dados reais. Instalação Android/iOS em dispositivo físico é validação separada. Rollback de código não é rollback de dados.
+
+P17 prepara e audita esses checkpoints, mas **não autoriza cutover**. Não resolver a falta de acesso com outro projeto, banco ou domínio por princípio. Nenhuma política nova das skills antigas foi incorporada; propostas R01..R03 aguardam aprovação.
+
+## Critério de saída do planejamento
+
+Inventário rastreável, todas as capacidades mapeadas, prompts com dependências sem ciclos, perguntas ligadas à etapa e UI condicionada à referência. Documentos podem ser revisados localmente sem commit/push. Preparação da entrega integrada fica pendente até merge da PR #1 e atualização da branch solicitada pelo responsável. Incertezas e limitações de execução são parte da entrega, não status verde fictício.

@@ -97,6 +97,7 @@ make publish            # valida, envia a branch e abre/atualiza a PR
 - [REVIEW.md](REVIEW.md): critérios, métricas, três níveis, bloqueios e Definition of Done.
 - [IMPLEMENTATION.md](IMPLEMENTATION.md): prioridades operacionais e contrato de publish.
 - [docs/pwa.md](docs/pwa.md): limites da PWA e decisões local-first pendentes.
+- [docs/rebuild/ROADMAP.md](docs/rebuild/ROADMAP.md): inventário funcional, decisões pendentes e sequência de prompts para reconstrução.
 
 ## Publicação por PR
 

@@ -24,4 +24,6 @@ Os procedimentos, recursos e pré-requisitos de cutover estão em [docs/operatio
 
 ## Depois da infraestrutura
 
+A análise funcional e os prompts estão em [docs/rebuild/ROADMAP.md](docs/rebuild/ROADMAP.md), com evidências no inventário e decisões pendentes próprias. São documentação de planejamento, não funcionalidades implementadas. Antes de preparar entrega integrada, aguardar o merge da PR #1 e atualizar docs/rebuild-plan a partir de main. O aceite operacional continua sendo pré-requisito para iniciar implementação funcional.
+
 Definir requisitos funcionais, contratos, dados, segurança e identidade visual. Implementar fatias pequenas com TDD, isolamento/autorização e migrations PostgreSQL testadas. Persistência e sincronização seguem as decisões de docs/pwa.md. Não antecipar funcionalidades antes do aceite operacional.
